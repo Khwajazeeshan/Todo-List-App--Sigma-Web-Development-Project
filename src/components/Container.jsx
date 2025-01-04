@@ -1,5 +1,4 @@
-import React from 'react'
-import { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import "./Container.css"
 import { v4 as uuidv4 } from 'uuid';
 import { FaPen } from "react-icons/fa";
@@ -8,8 +7,15 @@ import { MdDelete } from "react-icons/md";
 
 const Container = () => {
     const [todo, setTodo] = useState("")
-    const [todos, setTodos] = useState([])
+    const [todos, setTodos] = useState(() => {
+        const savedTodos = localStorage.getItem("todos");
+        return savedTodos ? JSON.parse(savedTodos) : [];
+    });
     const [finish, setFinish] = useState(false)
+
+    useEffect(() => {
+        localStorage.setItem("todos", JSON.stringify(todos));
+    }, [todos]);
 
     const Add = () => {
         if (todo.trim() !== "") {
@@ -34,6 +40,12 @@ const Container = () => {
         setTodo(e.target.value)
     }
 
+    const handleKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            Add();
+        }
+    };
+
     const checkbox = (e) => {
         let id = e.target.name;
         console.log(id)
@@ -47,7 +59,9 @@ const Container = () => {
     };
 
     const Empty = () => {
-        setTodos([])
+        if (window.confirm("Do you want to delete all todos?")) {
+            setTodos([]);
+        }
     }
 
     const ToggleFinish = (e) => {
@@ -61,7 +75,7 @@ const Container = () => {
             <div className="box">
                 <div className="task"> <h1>Add Your Todos</h1> </div>
                 <div className="field">
-                    <input className='input' type="text" placeholder='Enter Todos...' onChange={change} value={todo} />
+                    <input className='input' type="text" placeholder='Enter Todos...' onChange={change} value={todo} onKeyPress={handleKeyPress} />
                     <button className='btn' onClick={Add}>Add</button>
                 </div>
                 <div className="Your-todos"> {todos.length > 0 ? <div className='your-todos-box'> <div className="Your-todo"><div><h1>Your Todos...</h1></div><div><button className="btn" id='btn' onClick={Empty}>Empty Todos</button></div></div> <div className='finish'><input type="checkbox" checked={finish} onChange={ToggleFinish} /> Show Finished </div> </div> : <div><h1>No Todos...</h1></div>}</div>
